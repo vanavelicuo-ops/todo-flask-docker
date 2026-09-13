@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список задач</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+
+        button.btn-add {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.btn-add:hover {
+            background-color: #5a67d8;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f7fafc;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #edf2f7;
+            word-break: break-word;
+        }
+
+        .task-text {
+            color: #4a5568;
+            font-size: 15px;
+        }
+
+        .btn-delete {
+            color: #e53e3e;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: #fed7d7;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>📌 Список задач</h1>
+
+        <!-- Форма добавления задачи -->
+        <form action="/add" method="POST" class="input-group">
+            <input type="text" name="title" placeholder="Введите новую задачу..." required autocomplete="off">
+            <button type="submit" class="btn-add">Добавить</button>
+        </form>
+
+        <!-- Список задач -->
+        <ul class="task-list">
+            {% for task in tasks %}
+                <li class="task-item">
+                    <span class="task-text">{{ task.title }}</span>
+                    <a href="/delete/{{ task.id }}" class="btn-delete" title="Удалить">&times;</a>
+                </li>
+            {% else %}
+                <p class="empty-state">Список задач пуст. Добавьте первую!</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+</html>
