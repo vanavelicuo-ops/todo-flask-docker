@@ -130,7 +130,13 @@
         <ul class="task-list">
             {% for task in tasks %}
                 <li class="task-item">
-                    <span class="task-text">{{ task.title }}</span>
+                    <div>
+                        <span class="task-text">{{ task.title }}</span>
+                        <br>
+                        <small style="color: #a0aec0; font-size: 11px; display: block; margin-top: 4px;">
+                        Отправлено с: {{ task.device }}
+                        </small>
+                    </div>
                     <a href="/delete/{{ task.id }}" class="btn-delete" title="Удалить">&times;</a>
                 </li>
             {% else %}
