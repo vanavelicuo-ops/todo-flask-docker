@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    container_name: my_todo_app
+    restart: always
+    ports:
+      - "7777:7777"
