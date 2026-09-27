@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 import os
 try:
@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'my-super-secret-key-123'
 
 # Настройка базы данных SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
@@ -113,6 +114,34 @@ def show_users():
     for u in all_users:
         output += f"<p>Логин: {u.username} | хеш: {u.password}</p>"
     return output
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user = User.query.filter_by(username=username).first()
+
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            return redirect(url_for('index'))
+        else:
+            return "Неверное имя пользователя или пароль! Попробуйте снова."
+
+    return '''
+<form method="POST">
+    <h2>Вход</h2>
+    <input type="text" name="username" placeholder="Введите логин" required><br><br>
+    <input type="password" name="password" placeholder="Введите пароль" required><br><br>
+    <button type="submit">Войти</button>
+</form>
+'''
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7777, debug=True)
