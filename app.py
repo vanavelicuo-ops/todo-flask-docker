@@ -15,19 +15,23 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
+    password = db.Column(db.String(200), nullable=False)
+
+    tasks = db.relationship('Task', backref='author', lazy=True)
+
 # Модель задачи для БД (Добавили новое поле device)
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     device = db.Column(db.String(150), default="Неизвестное устройство") # Сюда пишем марку
 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
     def repr(self):
         return f'<Task {self.id}>'
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False, unique=True)
-    password = db.Column(db.String(200), nullable=False)
 
 # Автоматическое создание таблиц при запуске
 with app.app_context():
@@ -57,21 +61,44 @@ def get_clean_device(user_agent_string):
 # Главная страница: просмотр списка задач
 @app.route('/')
 def index():
-    tasks = Task.query.order_by(Task.id.desc()).all()
-    return render_template('index.html', tasks=tasks)
+    # Если пользователя нет в сессии - выкидывает на вход
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # ФИЛЬТР: Вытаскивает задачи только этого пользователя
+    current_user_id = session['user_id']
+    my_tasks = Task.query.filter_by(user_id=current_user_id).all()
+    
+    # Ищет имя юзера в SQLite
+    user = User.query.get(current_user_id)
+
+    # Передает личные задачи и имя юзера в HTML-шаблон
+    return render_template('index.html', tasks=my_tasks, username=user.username)
 
 # Маршрут для добавления задачи
 @app.route('/add', methods=['POST'])
 def add():
-    title = request.form.get('title')
-    if title and title.strip():
-        # Считываем User-Agent зашедшего друга!
+    # Если неавторизованный гость - выкидывает его
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    # Забирает текст из формочки (из поля 'title')
+    title_text = request.form.get('title')
+    
+    if title_text and title_text.strip():
+        # Считывает User-Agent зашедшего
         raw_ua = request.headers.get('User-Agent', '')
         device_name = get_clean_device(raw_ua)
         
-        new_task = Task(title=title.strip(), device=device_name)
+        # Вытаскивает ID текущего вошедшего из сессии
+        current_user_id = session['user_id']
+        
+        # записывает текст в title (как в базе), а владельца в user_id
+        new_task = Task(title=title_text.strip(), device=device_name, user_id=current_user_id)
+        
         db.session.add(new_task)
         db.session.commit()
+        
     return redirect(url_for('index'))
 
 # Маршрут для удаления задачи
