@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - name: 1. Скачать код из репозитория
-       uses: actions/checkout@v4
+      - name: 1. Скачать код из репозитория
+        uses: actions/checkout@v4
 
       - name: 2. Проверить наличие файлов проекта
         run: |
