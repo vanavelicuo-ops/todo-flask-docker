@@ -1,0 +1,23 @@
+name: First CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+     - name: 1. Скачать код из репозитория
+       uses: actions/checkout@v4
+
+      - name: 2. Проверить наличие файлов проекта
+        run: |
+         echo "Запуск проверки на сервере GitHub..."
+         ls -la
+
+      - name: 3. создать тестовый докер образ
+        run: |
+         docker build -t my-nginx-app:test .
+         docker images
